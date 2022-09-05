@@ -1,0 +1,196 @@
+chile_filter <-
+  function(TableGrid,
+           #input table with SitesXSpecies and numeric columns of year and month
+           Since,
+           #Year cutoff point
+           MinYears,
+           #minimum number of years sampled per site
+           MinMonths,
+           #minimum number of months sampled per site
+           BeeStart,
+           #where the columns of bees start
+           MinSpp,
+           #minimum number of species per site
+           binary= TRUE,
+           #make binary table output
+           SpatialSubset = TRUE,
+           #clip by shape
+           Shape,
+           #original gridded shapefile
+           Mask,
+           #loc output suffix
+           lc_suffix,
+           #if SpatialSubset = T then clip with this raster
+           RasterStack,
+           #the environmental variables in rastersatck of desired mask
+           WriteShape = TRUE,
+           #should the result species data be written to shapefiles
+           Filepath) {
+    if (is.na(Since) == TRUE) {
+      grid.in = TableGrid
+    } else{
+      grid.in = subset(TableGrid, Year >= Since)
+    }#subset by years
+    
+    #Only sites that have been sampled in separate years
+    Years <-
+      names(which(with(
+        grid.in, tapply(Year, Grid, function(x)
+          length(unique(x)))
+      ) < MinYears)) #select sites with less than x years
+    
+    grid.in.2 <-
+      grid.in[!grid.in$Grid %in% Years,]#subset removing undersampled sites
+    
+    #Only sites that have been sampled in separate months
+    grid.in.2$Month[is.na(grid.in.2$Month)] <-
+      0 #convert NA months to 0
+    Months = names(which(with(
+      grid.in.2, tapply(Month, Grid, function(x)
+        length(unique(x)))
+    ) < MinMonths))#select sites with less than x months
+    
+    grid.in.3 <-
+      grid.in.2[!grid.in.2$Grid %in% Months,]#subset removing undersampled sites
+    
+    #aggregate to grid
+    grid.agg <- aggregate(grid.in.3[BeeStart:ncol(grid.in.3)],
+                          by = list(Grid = grid.in.3$Grid),
+                          FUN = sum)
+    
+    #subset by number of species found
+    bee_grid_bin <-
+      grid.agg[, 2:ncol(grid.agg)] #remove grid column
+    
+    if (binary==TRUE){
+      bee_grid_bin[bee_grid_bin > 0] <-  1 #make binary
+    }
+    
+    #We keep only the units of bee_grid for which more than X species have been observed
+    grid.in.4 <-
+      grid.agg[rowSums(bee_grid_bin) >= MinSpp,] #subset by min species
+    row.names(grid.in.4) <- grid.in.4$Grid #make rownames grid names
+    
+    #remove species found in no sites
+    grid.in.5 <- grid.in.4[, 2:ncol(grid.in.4)]
+    grid.in.5 <- grid.in.5[, colSums(grid.in.5) > 0]
+    grid.in.5 <- cbind(Grid = grid.in.4[, 1], grid.in.5)
+    
+    #count the number of sites, species and specimens in this new sorting
+    count.sites <-  nrow(grid.in.5)
+    print(paste("Total Number of Sites: ", count.sites)) #print
+    count.species <- ncol(grid.in.5) - 1
+    print(paste("Total Number of Species: ", count.species)) #print
+    count.specimens <-  sum(grid.in.5[, 2:ncol(grid.in.5)])
+    print(paste("Total Number of Specimens: ", count.specimens)) #print
+    
+    if (SpatialSubset == TRUE) {
+      #restrict to zone
+      grid.in.5$Grid = factor(grid.in.5$Grid) #reset levels
+      shapesites <- Shape[Shape$Grid %in% levels(grid.in.5$Grid), ]
+      
+      if (WriteShape == TRUE) {
+        writeOGR(
+          shapesites,
+          Filepath,
+          paste(
+            "Sites",
+            count.sites,
+            Since,
+            MinYears,
+            MinMonths,
+            MinSpp,
+            sep = "_"
+          ),
+          driver = "ESRI Shapefile",
+          overwrite_layer = T
+        )
+      }
+      
+      #remove grids outside mask
+      spat.sub <-
+        crop(shapesites, extent(Mask)) #extract only desired grids
+      spat.sub$Grid <- factor(spat.sub$Grid) #remove levels
+      listofgrids <-
+        levels(spat.sub$Grid) #get list of desired grids
+      grid.sub <- grid.in.5[grid.in.5$Grid %in% listofgrids,]
+      
+      #extract spatial extent of subset grids
+      grid.sub$Grid = factor(grid.sub$Grid)#reset grid levels
+      shape.sub <-
+        Shape[Shape$Grid %in% levels(grid.sub$Grid),]#gives polygon of all sites
+      coord.sub <- coordinates(shape.sub) #extract centroids
+      row.names(coord.sub) <-  grid.sub$Grid #redefine row.names
+      
+      #We keep only the points where we have environmental data
+      ref_points <-
+        raster::extract(RasterStack, coord.sub) #find overlap between raster and sites
+      env_data = as.data.frame(ref_points) #table of environemntal data
+      row.names(env_data) = row.names(coord.sub) #redefine row.names
+      env_data = na.omit(env_data) #remove missing data
+      grid.comp <-
+        grid.sub[row.names(env_data), 2:ncol(grid.sub)] #just species grids in selected sites
+      coord.sub = data.frame(coord.sub[row.names(grid.comp),]) #select onyl coords from selected sites
+      assign(paste0("loc", lc_suffix), coord.sub, envir = .GlobalEnv) #create file of coordinates for later
+      
+      #Final table
+      grid.comp <-
+        grid.comp[colSums(grid.comp) > 0] #remove species with no specimens
+      grid.expanded <-
+        data.frame(merge(coord.sub, grid.comp, by = "row.names")) #join coords and species
+      grid.expanded$Site <-
+        grid.expanded$Row.names #create site column
+      grid.expanded <- grid.expanded[, -1] #remove excess column
+      
+      #count the number of sites, species and specimens in this new sorting
+      count.sites.sub <-  nrow(grid.expanded)
+      print(paste("Subset Number of Sites: ", count.sites.sub)) #print
+      count.species.sub <- ncol(grid.expanded) - 3
+      print(paste("Subset Number of Species: ", count.species.sub)) #print
+      count.specimens.sub <-
+        sum(grid.expanded[, 3:(ncol(grid.expanded) - 1)])
+      print(paste("Subset Number of Specimens: ", count.specimens.sub)) #print
+      
+      #make final binary table
+      grid.expanded.comp.bin = grid.expanded[, 3:(ncol(grid.expanded) -
+                                                    1)]#just species data
+      row.names(grid.expanded.comp.bin) = grid.expanded$Site #redefine sites
+      grid.expanded.comp.bin[grid.expanded.comp.bin > 0] <- 1
+      grid.expanded.bin = cbind(grid.expanded[, 1:2],
+                                grid.expanded.comp.bin,
+                                Site = factor(grid.expanded[, ncol(grid.expanded)]))
+      colnames(grid.expanded.bin) <-
+        c("x", "y", colnames(grid.expanded.bin[, 3:ncol(grid.expanded.bin)]))
+      
+      return(grid.expanded.bin)
+      
+      if (WriteShape == TRUE) {
+        #Make shape
+        grid.expanded.bin.pts <- grid.expanded.bin
+        grid.expanded.bin.pts$Site <- row.names(grid.expanded.bin)
+        coordinates(grid.expanded.bin.pts) <- ~ x + y
+        crs(grid.expanded.bin.pts) <- crs(RasterStack)
+        
+        writeOGR(
+          grid.expanded.bin.pts,
+          Filepath,
+          paste(
+            "coordinates_subset",
+            count.sites.sub,
+            "sites",
+            Since,
+            MinYears,
+            MinMonths,
+            MinSpp,
+            sep = "_"
+          ),
+          driver = "ESRI Shapefile",
+          overwrite_layer = T
+        )
+        
+      }
+      
+    }
+    
+    
+  }
