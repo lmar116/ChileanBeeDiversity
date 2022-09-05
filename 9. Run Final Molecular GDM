@@ -1,0 +1,68 @@
+#Construct model with selected variables
+phylomatr_final.cc.dna = formatsitepair(
+  phylomat2.cc.dna,
+  bioFormat = 3,
+  predData = envdata.final.cc.dna,
+  siteColumn = "Site",
+  XColumn = "x",
+  YColumn = "y",
+  dist = "bray"
+)
+
+gdm_final.phylo.cc.dna <- gdm(phylomatr_final.cc.dna, geo = T)
+summary(gdm_final.phylo.cc.dna)
+
+#Plot GDMs
+plot(gdm_final.phylo.cc.dna, include.rug = F, rug.sitepair = phylomatr_final.cc.dna) 
+
+plotUncertainty(
+  phylomatr_final.cc.dna,
+  geo = T,
+  bsIters = 100,
+  sampleSites = 0.90,
+  cores = detectCores() - 1
+)
+
+
+#Transforms the environmental variables of the final RasterStack according to the functions performed by the model
+tabTrans.phylo.cc.dna = gdm.transform(gdm_final.phylo.cc.dna, final_expl_scaled.phylo.cc.dna)
+
+var.final.phylo.cc.dna <- names(tabTrans.phylo.cc.dna)
+par(mfrow=c(2,3))
+for (i in 1:length(var.final.phylo.cc.dna)){
+  plot(tabTrans.phylo.cc.dna[[i]],
+       main = names(tabTrans.phylo.cc.dna[[i]]),
+       col = tempcol(100))
+}
+
+#Transform raster to matrices
+rastDat.phylo.cc.dna <- na.omit(getValues(tabTrans.phylo.cc.dna))
+
+#PCA of Matrix
+pcaSamp.phylo.cc.dna <- prcomp(rastDat.phylo.cc.dna)
+
+# The PCA is used to predict the coordinates of each pixel in the three axes of this PCA
+# (RasterBrick with three layers = the coordinates in the first three axes)
+pcaRast.phylo.cc.dna <-predict(tabTrans.phylo.cc.dna, pcaSamp.phylo.cc.dna, index = 1:3)
+
+# scale rasters
+pcaRast.phylo.cc.dna[[1]] <-
+  (pcaRast.phylo.cc.dna[[1]] - pcaRast.phylo.cc.dna[[1]]@data@min) /
+  (pcaRast.phylo.cc.dna[[1]]@data@max - pcaRast.phylo.cc.dna[[1]]@data@min) * 255
+pcaRast.phylo.cc.dna[[2]] <-
+  (pcaRast.phylo.cc.dna[[2]] - pcaRast.phylo.cc.dna[[2]]@data@min) /
+  (pcaRast.phylo.cc.dna[[2]]@data@max - pcaRast.phylo.cc.dna[[2]]@data@min) * 255
+pcaRast.phylo.cc.dna[[3]] <-
+  (pcaRast.phylo.cc.dna[[3]] - pcaRast.phylo.cc.dna[[3]]@data@min) /
+  (pcaRast.phylo.cc.dna[[3]]@data@max - pcaRast.phylo.cc.dna[[3]]@data@min) * 255
+
+
+##plot predictions by assigning the coordinates for each axis of the PCA to RED, BLUE and GREEN respectively
+plotRGB(
+  pcaRast.phylo.cc.dna,
+  r = 1,
+  g = 2,
+  b = 3,
+  axes = TRUE,
+  stretch = 'lin'
+)
