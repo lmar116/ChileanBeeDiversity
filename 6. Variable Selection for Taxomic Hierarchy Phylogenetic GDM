@@ -1,0 +1,58 @@
+
+#create community matrix of sites with site names
+b.filt.bin.comm <- b.filt.bin[,-c(1:2,ncol(b.filt.bin))] #remove site info from original database
+
+#taxtree = list of Superfamily/Position/Family/Subfamily/Tribe/Genus/Subgenus/Binomial for all species
+
+#convert to tree
+phylo = as.phylo.formula(~Superfamily/Position/Family/Subfamily/Tribe/Genus/Subgenus/Binomial, data=taxtree)
+phy = compute.brlen(phylo, power=1)
+phy$root.edge <- 0
+phy$node.label<-NULL
+
+#drop missing species
+drop_taxa.cc = setdiff(levels(factor(phy$tip.label)),colnames(b.filt.bin))
+#select taxa to be removed
+phy.sel.cc <- drop.tip(phy, drop_taxa.cc)
+
+#convert to sparse matrix
+b.filt.bin.comm.mat.cc <- data.matrix(b.filt.bin.comm.cc)
+b.filt.bin.comm.mat2.cc <- Matrix(b.filt.bin.comm.mat.cc, sparse = TRUE)
+
+#create Sorensen dissimilarity between sites 
+phymat.cc <-  phylobeta(b.filt.bin.comm.mat2.cc, phy.sel.cc,  index.family="sorensen")
+phylomat.cc <- data.matrix(phymat.cc$phylo.beta.sor) #select total sorensen
+phylomat2.cc <- data.matrix(cbind(Site=as.numeric(row.names(phylomat.cc)),phylomat.cc))
+
+#envdata.cc = environemntal data in table form, rownames=site, columns=variables
+
+#Final Variable Selection Phylo - Central Chile
+phylomatr_selec.cc <- formatsitepair(
+  phylomat2.cc,
+  bioFormat = 3,
+  siteColumn = "Site",
+  predData = envdata.cc,
+  XColumn = "x",
+  YColumn = "y",
+  dist = "bray"
+)
+
+#Test the significance of our variables. This function removes one by one the least significant variables,
+# and returns a p-value for the significance of the model.
+gdm_test_signif.phylo = gdm.varImp(
+  phylomatr_selec.cc,
+  geo = T,
+  nPerm = 100,
+  parallel = TRUE,
+  cores = detectCores() - 1
+)
+gdm_test_signif.phylo
+
+#Extract best models and variables based on p-values
+gdm.best.phylo <-select.GDM.best(gdm_test_signif.cc.gt.phylo,0.10)
+
+final_expl.phylo.cc <- stack(lapply(gdm.best.phylo[[1]][-1],get))
+final_expl_scaled.phylo.cc <- raster.transformation(final_expl.phylo.cc,
+                                                    trans = "norm",
+                                                    smin = 0,
+                                                    smax = 255)
