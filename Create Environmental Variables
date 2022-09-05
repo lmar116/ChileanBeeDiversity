@@ -1,0 +1,66 @@
+#Check correlations and select 
+
+# see data files for 'mask_chile_rs'
+
+#Biocliamtic variables - downlaoded from WorldClim
+bioclims <- list.files("./Data/Rasters/Bioclims",
+                       pattern = ".tif$",
+                       full.names = T)
+rb <- lapply(bioclims, raster)
+
+#loop through to make single objects of masked rasters and single raster stack for each mask
+bioclim_names_cc <- c()
+for (i in 1:length(bioclims)) {
+  #load and assign name each raster
+  name <- sub("\\_.*", "", names(rb[[i]]))
+  bioclim_names_cc[i] <- paste0(name, "_cc")
+  ras <- rb[[i]]
+  ras_mask_cc <-
+    raster::mask(crop(ras, mask_chile_rs), Chili) #mask to whole central chile
+  assign(paste0(name, "_cc"), ras_mask_cc)
+  print(paste(i, "of", length(bioclims)))
+}
+bc_stack_cc <- stack(mget(unique(as.character(bioclim_names_cc))))
+
+#Other variables  - see artcle for other raster sources
+others <- list.files("./Data/Rasters/Other",
+                     pattern = ".tif$",
+                     full.names = T)
+ro <- lapply(others, raster)
+
+#loop through to make single objects of masked rasters and single raster stack for each mask
+other_names_cc <- c()
+for (i in 1:length(others)) {
+  #load and assign name each raster
+  name <- sub("_5km", "", names(ro[[i]]))
+  other_names_cc[i] <- paste0(name, "_cc")
+  ras <- ro[[i]]
+  ras_mask_cc <-
+    raster::mask(crop(ras, mask_chile_rs), Chili) #mask to whole central chile
+  assign(paste0(name, "_cc"), ras_mask_cc)
+}
+ot_stack <- stack(mget(unique(as.character(other_names))))
+ot_stack_cc <- stack(mget(unique(as.character(other_names_cc))))
+
+
+#Land use variables - Copernicus global land service at a 100×100 m resolution (downloaded in May 2019 from https://land.copernicus.eu/global/products/lc) 
+lands <- list.files("./Data/Rasters/LandUse",
+                    pattern = ".tif$",
+                    full.names = T)
+
+rl <- lapply(lands, raster)
+
+land_names_cc <- c()
+for (i in 1:length(lands)) {
+  #load and assign name each raster
+  name <- sub("_Chile_5km", "", names(rl[[i]]))
+  land_names_cc[i] <- paste0(name, "_cc")
+  ras <- rl[[i]]
+  ras_mask_cc <-
+    raster::mask(crop(ras, mask_chile_rs), Chili) #mask to whole central chile
+  assign(paste0(name, "_cc"), ras_mask_cc)
+}
+ld_stack_cc <- stack(mget(unique(as.character(land_names_cc))))
+
+#final raster stack
+covs.cc = stack(bc_stack_cc, ld_stack_cc, ot_stack_cc)
