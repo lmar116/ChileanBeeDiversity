@@ -1,6 +1,3 @@
-library(raster)
-library(NBClust)
-
 #How many clusters?
 cluster_vector <- c("ch","kl","hartigan","silhouette","gap","ratkowsky","ccc", "scott", "marriot")
 
