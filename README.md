@@ -1,1 +1,1 @@
-# ChileanBeeDiversity
+# Chilean Bee Diversity
