@@ -1,3 +1,10 @@
+# Backward elimination of the variables in the gdm (Comm = Community matrix, explvar = rasterstack
+# of the variables we want to select alpha = additional percentage variance threshold explained
+# below which the variables are eliminated, geoTF = take into account the geographical distance
+# for the model, distance = used index (Bray curtis or other), weight = to grant a weight
+# according to the specific richness p ex), abund: are our data data of abundance (TRUE) or
+# presence-absence (FALSE)
+
 backward_sel_gdm <-
   function(comm,
            explvar,
