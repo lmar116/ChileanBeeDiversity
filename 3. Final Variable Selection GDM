@@ -1,6 +1,3 @@
-library(GDM)
-Library(raster)
-
 #Final Variable Selection
 #GDM format 
 distmatr_selec = formatsitepair(
