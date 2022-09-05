@@ -1,0 +1,51 @@
+library(raster)
+library(NBClust)
+
+#How many clusters?
+cluster_vector <- c("ch","kl","hartigan","silhouette","gap","ratkowsky","ccc", "scott", "marriot")
+
+#How many clusters?
+#Serves to calculate indices for the choice of the number of clusters based on a rasterstack
+kmt.cc <- data.frame()
+for(cv in cluster_vector) {
+  rkt <- raster.kmeans.test(
+    stack(pcaRast.cc),
+    distance = "euclidean",
+    geo = T,
+    index = paste(cv)
+  )
+  rkt
+  kmt2 <- data.frame(Clusters=rkt$Best.nc[1],
+                     Index=cv)
+  kmt.cc <- rbind(kmt.cc,kmt2)
+  print(cv)
+}
+kmt.cc
+
+kmt.clus.cc <- sort(kmt.cc$Clusters) #order values
+group.number.cc <- ceiling(mean(kmt.clus.cc[-c(1,length(kmt.clus.cc))])) #get mean, remove first and last values
+
+#Lets you do a kmean clustering on a rasterstack
+grouping.cc1 = raster.kmeans(
+  stack(pcaRast.cc),
+  k = group.number.cc ,
+  iter.max = 10000,
+  geo = T
+)
+
+tempcol <- colorRampPalette(
+  c(
+    "purple",
+    "blue",
+    "skyblue",
+    "green",
+    "lightgreen",
+    "yellow",
+    "orange",
+    "red",
+    "darkred"
+  )
+)
+
+#visualise map of groups of similar species and habitat 
+plot(grouping.cc1, col = tempcol(100))
