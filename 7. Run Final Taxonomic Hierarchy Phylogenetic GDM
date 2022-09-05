@@ -1,0 +1,71 @@
+#Construct model with selected variables
+phylomatr_final.cc = formatsitepair(
+  phylomat2.cc,
+  bioFormat = 3,
+  predData = envdata.final.cc,
+  siteColumn = "Site",
+  XColumn = "x",
+  YColumn = "y",
+  dist = "bray"
+)
+
+#final GDM
+gdm_final.phylo.cc <- gdm(phylomatr_final.cc, geo = T)
+summary(gdm_final.phylo.cc)
+
+#Plot GDM
+plot(gdm_final.phylo.cc, include.rug = F, rug.sitepair = phylomatr_final.cc) 
+
+plot.unc.set.ymax(
+  phylomatr_final.cc,
+  geo = T,
+  bsIters = 100,
+  sampleSites = 0.90,
+  cores = detectCores() - 1,
+  Ymax=0.4
+)
+
+
+#Transforms the environmental variables of the final RasterStack according to the functions performed by the model
+tabTrans.phylo.cc = gdm::gdm.transform(gdm_final.phylo.cc, final_expl_scaled.phylo.cc)
+
+var.final.phylo.cc <- names(tabTrans.phylo.cc)
+par(mfrow=c(2,3))
+for (i in 1:length(var.final.phylo.cc)){
+  plot(tabTrans.phylo.cc[[i]],
+       main = names(tabTrans.phylo.cc[[i]]),
+       col = tempcol(100))
+}
+
+
+#Transform raster to matrices
+rastDat.phylo.cc <- na.omit(getValues(tabTrans.phylo.cc))
+
+#PCA of Matrix
+pcaSamp.phylo.cc <- prcomp(rastDat.phylo.cc)
+
+# The PCA is used to predict the coordinates of each pixel in the three axes of this PCA
+# (RasterBrick with three layers = the coordinates in the first three axes)
+pcaRast.phylo.cc <-predict(tabTrans.phylo.cc, pcaSamp.phylo.cc, index = 1:3)
+
+# scale rasters
+pcaRast.phylo.cc[[1]] <-
+  (pcaRast.phylo.cc[[1]] - pcaRast.phylo.cc[[1]]@data@min) /
+  (pcaRast.phylo.cc[[1]]@data@max - pcaRast.phylo.cc[[1]]@data@min) * 255
+pcaRast.phylo.cc[[2]] <-
+  (pcaRast.phylo.cc[[2]] - pcaRast.phylo.cc[[2]]@data@min) /
+  (pcaRast.phylo.cc[[2]]@data@max - pcaRast.phylo.cc[[2]]@data@min) * 255
+pcaRast.phylo.cc[[3]] <-
+  (pcaRast.phylo.cc[[3]] - pcaRast.phylo.cc[[3]]@data@min) /
+  (pcaRast.phylo.cc[[3]]@data@max - pcaRast.phylo.cc[[3]]@data@min) * 255
+
+
+##plot predictions by assigning the coordinates for each axis of the PCA to RED, BLUE and GREEN respectively
+plotRGB(
+  pcaRast.phylo.cc,
+  r = 1,
+  g = 2,
+  b = 3,
+  axes = TRUE,
+  stretch = 'lin'
+)
