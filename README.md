@@ -16,4 +16,17 @@ Session Information for Manuscript Analysis
  date     2022-09-05
 
 Packages needed:
-library (rentrez)
+library(ape)
+library(betapart)
+library(Biostrings)
+library(dplyr)
+library(gdm)
+library(ggplot2)
+library(msa)
+library(phangorn)
+library(picante)
+library(raster)
+library(rgdal)
+library(rentrez)
+library(seqinr)
+library(tidyverse)
