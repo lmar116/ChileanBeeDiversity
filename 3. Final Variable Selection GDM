@@ -4,7 +4,7 @@ Library(raster)
 #Final Variable Selection
 #GDM format 
 distmatr_selec = formatsitepair(
-  b.filt.bin.cc.good,
+  b.filt.bin,
   bioFormat = 1,
   abundance = FALSE,
   siteColumn = "Site",
@@ -13,7 +13,7 @@ distmatr_selec = formatsitepair(
   predData = select.covs.cc,
   weightType = "richness"
 )
-distmatr_selec.cc.good = na.omit(distmatr_selec.cc.good)
+distmatr_selec = na.omit(distmatr_selec)
 
 gdm_test_signif = gdm.varImp(
   distmatr_selec,
