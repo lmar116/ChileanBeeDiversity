@@ -1,3 +1,4 @@
+#filter species site matrix based on cells determined to be 'well-sampled'
 chile_filter <-
   function(TableGrid,
            #input table with SitesXSpecies and numeric columns of year and month
