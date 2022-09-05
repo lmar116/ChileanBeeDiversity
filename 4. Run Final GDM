@@ -1,0 +1,90 @@
+#using best variablesfit final GDM
+
+distmatr_final = formatsitepair(
+  b.filt.bin,
+  1,
+  abundance = FALSE,
+  siteColumn = "Site",
+  XColumn = "x",
+  YColumn = "y",
+  predData = final_expl_scaled,
+  weightType = "richness",
+  dist = "bray"
+)
+
+gdm_final = gdm(distmatr_final,
+                        geo = T,
+                        splines = c(3, 3, 3, 3))#depends on number off final variables
+summary(gdm_final)
+
+
+#visualise GDM output
+plot(gdm_final,
+     include.rug = F,
+     rug.sitepair = distmatr_final)
+
+plotUncertainty(
+  distmatr_final,
+  geo = T,
+  bsIters = 100,
+  sampleSites = 0.90,
+  cores = detectCores() - 1,
+  parallel = T
+)
+
+#Transforms the environmental variables of the final RasterStack according to the functions performed by the model
+tabTrans.cc = gdm.transform(gdm_final, final_expl_scaled)
+
+#colour ramp
+tempcol <- colorRampPalette(
+  c(
+    "purple",
+    "blue",
+    "skyblue",
+    "green",
+    "lightgreen",
+    "yellow",
+    "orange",
+    "red",
+    "darkred"
+  )
+)
+
+var.final.cc <- names(tabTrans.cc)
+par(mfrow = c(2, 3))
+for (i in 1:length(var.final.cc)) {
+  plot(tabTrans.cc[[i]],
+       main = names(tabTrans.cc[[i]]),
+       col = tempcol(100))
+  plot(test_rasras, add = T, col = NA)
+}
+
+#Transform raster to matrices
+rastDat.cc <- na.omit(getValues(tabTrans.cc))
+
+#PCA of Matrix
+pcaSamp.cc <- prcomp(rastDat.cc)
+
+# The PCA is used to predict the coordinates of each pixel in the three axes of this PCA
+# (RasterBrick with three layers = the coordinates in the first three axes)
+pcaRast.cc <- raster::predict(tabTrans.cc, pcaSamp.cc, index = 1:3)
+
+pcaRast.cc[[1]] <-
+  (pcaRast.cc[[1]] - pcaRast.cc[[1]]@data@min) /
+  (pcaRast.cc[[1]]@data@max - pcaRast.cc[[1]]@data@min) * 255
+pcaRast.cc[[2]] <-
+  (pcaRast.cc[[2]] - pcaRast.cc[[2]]@data@min) /
+  (pcaRast.cc[[2]]@data@max - pcaRast.cc[[2]]@data@min) * 255
+pcaRast.cc[[3]] <-
+  (pcaRast.cc[[3]] - pcaRast.cc[[3]]@data@min) /
+  (pcaRast.cc[[3]]@data@max - pcaRast.cc[[3]]@data@min) * 255
+
+
+plotRGB(
+  pcaRast.cc,
+  r = 1,
+  g = 2,
+  b = 3,
+  axes = TRUE,
+  stretch = 'lin'
+)
