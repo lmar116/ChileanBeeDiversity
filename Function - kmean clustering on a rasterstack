@@ -42,7 +42,7 @@ raster.kmeans.test = function(x,
   Test = NbClust::NbClust(
     oDF,
     distance = distance,
-    min.nc = 5,
+    min.nc = 5, #starting point of five clusters (where 80% of variance was explained) 
     max.nc = 10,
     method = "kmeans",
     index = index
