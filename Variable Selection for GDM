@@ -1,0 +1,49 @@
+#get variable list
+vars.cc <- names(covs.cc) #see: Create Environmental Variables
+
+#empty vectors for loop
+keep.cc <- c()
+skip.cc <- c()
+
+for (e in 1:10) {
+  for (i in vars.cc)  {
+    for (j in vars.cc) {
+      if (i %notin% skip.cc & j %notin% skip.cc) {
+        if (i != j) {
+          x <- ext.cc[, paste(i)] #extract column i
+          y <- ext.cc[, paste(j)] #extract column j
+          r <- cor(x, y) #compare i and j
+          
+          if (r >= 0.7 | r <= (-0.7)) { #only compare high correlations
+            rstack <- stack(get(i), get(j))
+            selec <-  backward_sel_gdm(b.filt.bin.cc.good, rstack,
+                                       1, F, "bray", "richness", F)
+            print(i)
+            print(j)
+            print(names(selec))
+            if(names(selec) %like% "Chile"){
+              add <- paste0(gsub("_Chile_5km", "", names(selec)),"_cc")
+            }else{
+              add <- paste0(gsub("_5km", "", names(selec)),"_cc")
+            }
+            rem <- setdiff(c(i, j), add)
+            
+            keep.cc <- c(keep.cc, add)
+            skip.cc <- c(skip.cc, rem)
+          } else{
+            keep.cc <- c(keep.cc, i, j)
+          }
+        }
+      }
+    }
+  }
+  
+  vars.cc <- unique(keep.cc[keep.cc %notin% skip.cc]) #create new variable list to loop through
+  assign(paste0("round", e, ".cc"), vars.cc) #check each step if wanted
+  print(paste("Round",e))
+}
+
+vars.cc #view selected variable names
+vars.cc <- vars.cc[!vars.cc %in% c("mean_rad_cc","Shrub_cc","Snow_cc","Urban_cc")]
+vars.cc <- c(vars.cc,"max_rad_cc")
+select.covs.cc <- stack(lapply(vars.cc,get)) #stack selected rasters
