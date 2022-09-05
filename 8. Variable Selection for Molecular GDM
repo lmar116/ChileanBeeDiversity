@@ -1,0 +1,129 @@
+#get phylogenetic data
+#allnames = vector of all species names - include outgroup species
+
+for (i in 1:length(allnames)) {
+  print(i)
+  print(allnames[i])
+  bee <- paste0(allnames[i]," AND COI") #We want a character vector
+  #nucleotide database (nuccore) and retmax determines the max number
+  bee_search <- entrez_search(db="nuccore", term=bee, retmax=40)
+  if (bee_search$count>0){
+    COI_seqs <- entrez_fetch(db="nuccore", id=bee_search$ids,
+                             rettype="fasta")
+    class(COI_seqs)
+    write(COI_seqs, paste0("./GenBank/",gsub(" ","_",allnames[i]),"_COI.fasta"), sep="\n")}else{
+      print("error")
+    }
+}
+
+#read it in
+fastas <- list.files(path = "./GenBank", pattern = ".fasta",full.names = T)
+
+#make sure only correct species included in fasta
+for (f in 1:length(fastas)){
+  print(f)
+  name1 <- gsub("./GenBank/","",fastas[f])
+  name <- gsub("_COI.fasta","",name1)
+  print(name)
+  testfasta <- read.fasta(fastas[f])
+  vec=c()
+  for (l in 1:length(testfasta)){
+      attr <- lapply(testfasta[l], attributes)
+      if(any(attr %like% gsub("_"," ",name))&any(attr %like% 'COI')){
+        vec=c(vec,l)
+      }
+  }
+if(!is.null(vec)){fas <- testfasta[vec]
+write.fasta(fas, replicate(length(vec),name),
+            paste0("./CleanGenBank/",name,"_COI.fasta"))}else{
+              (print("error"))}
+
+}
+
+#load fasta of all species
+myS <- readDNAStringSet("./CleanGenBank/final.fasta")
+
+#alignement
+musAlignment <- msa(unique(myS),method=c("Muscle"),verbose=T,type='DNA',maxiters=100)
+
+#conversion
+dna.mus <- msaConvert(musAlignment,
+                      type=c("phangorn::phyDat"))
+
+#phangorn data
+phyDat.mus <- phyDat(dna.mus, type = "DNA", levels = NULL)
+phyDat.mus <- unique(phyDat.mus,identical = FALSE)
+
+#distance matrix
+dna_dist.mus <- dist.ml(phyDat.mus , model="JC69")
+
+#fit tree
+NJtree.mus  <- NJ(dna_dist.mus)
+NJtree.mus  <- root(NJtree.mus,"Outgroup Species Name")
+
+#maximum liklihood
+fit.mus = pml(NJtree.mus, data=phyDat.mus)
+fitcl.bees.mus <- optim.pml(fit.mus, TRUE)
+fitGTR.mus1 <- update(fit.mus, k=4, inv=0.2)
+fitGTR.mus <- optim.pml(fitGTR.mus1, model="GTR", optInv=TRUE, optGamma=TRUE,
+                        rearrangement = "NNI", control = pml.control(trace = 0))
+fitGTR.mus$tree  <- root(fitGTR.mus$tree,"Bembix_troglodytes")
+
+#bootstrapping
+bs.mus <- bootstrap.pml(fitGTR.mus, bs=100, optNni=TRUE, multimusre=F)
+plotBS(midpoint(bs.mus), type="phylogram")
+plotBS(midpoint(fitGTR.mus$tree), bs.mus, p = 50, type="p")
+
+#back to distance matrix
+matrix.gtr.mus <- cophenetic.phylo(fitGTR.mus$tree)
+
+#drop species from comm matrix with dna data
+drop_matrix.cc.dna = setdiff(colnames(b.filt.bin.comm),levels(factor(fitGTR.mus$tree$tip.label)))
+b.filt.bin.comm.cc2 <- b.filt.bin.comm[ , -which(names(b.filt.bin.comm) %in% drop_matrix.cc.dna)]
+
+#drop missing species
+drop_taxa.cc.dna = setdiff(levels(factor(fitGTR.mus$tree$tip.label)),colnames(b.filt.bin.comm.cc2))
+phy.sel.cc.dna <- drop.tip(fitGTR.mus$tree, drop_taxa.cc.dna)
+plot(phy.sel.cc.dna)
+
+#convert to sparse matrix
+b.filt.bin.comm.mat.cc.dna <- data.matrix(b.filt.bin.comm.cc2)
+b.filt.bin.comm.mat2.cc.dna <- Matrix(b.filt.bin.comm.mat.cc.dna, sparse = TRUE)
+
+#create Sorensen dissimilarity between sites 
+phymat.cc.dna <-  phylobeta(b.filt.bin.comm.mat2.cc.dna, phy.sel.cc.dna,  index.family="sorensen")
+phylomat.cc.dna <- data.matrix(phymat.cc.dna$phylo.beta.sor) #select total sorensen
+phylomat2.cc.dna <- data.matrix(cbind(Site=as.numeric(row.names(phylomat.cc.dna)),phylomat.cc.dna))
+
+#Final Variable Selection Phylo DNA
+phylomatr_selec.cc.dna <- formatsitepair(
+  phylomat2.cc.dna,
+  bioFormat = 3,
+  siteColumn = "Site",
+  predData = envdata.cc,
+  XColumn = "x",
+  YColumn = "y",
+  dist = "bray"
+)
+
+#Test the significance of our variables. This function removes one by one the least significant variables,
+# and returns a p-value for the significance of the model.
+gdm_test_signif.cc.gt.phylo.dna = gdm.varImp(
+  phylomatr_selec.cc.dna,
+  geo = T,
+  nPerm = 100,
+  parallel = TRUE,
+  cores = detectCores() - 1
+)
+
+gdm_test_signif.cc.gt.phylo.dna
+
+#Extract best models and variables based on p-values
+gdm.best.phylo.cc.gt.dna <-select.GDM.best(gdm_test_signif.cc.gt.phylo.dna,0.10)
+
+# create raster stack of selected variables Central Chile
+final_expl.phylo.cc.dna <- stack(lapply(gdm.best.phylo.cc.gt.dna[[1]][-1],get))
+final_expl_scaled.phylo.cc.dna  <- raster.transformation(final_expl.phylo.cc.dna ,
+                                                    trans = "norm",
+                                                    smin = 0,
+                                                    smax = 255)
