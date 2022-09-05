@@ -1,0 +1,12 @@
+select.GDM.best <- function(data, #input gdm.varImp table
+                            p) {
+  #p-value cutoff
+  gdm.p <- data.frame(data[[3]])
+  model <- row.names(as.matrix(which(apply(
+    gdm.p, 2, max, na.rm = TRUE
+  ) <= p)[1])) #select the name of the first column with max value less than or p
+  variables <-
+    list(row.names(gdm.p)[which(!is.na(gdm.p[, model]), arr.ind = TRUE)])
+  names(variables) <- paste(model)
+  return(variables)
+}
