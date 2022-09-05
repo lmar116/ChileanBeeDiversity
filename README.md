@@ -1,12 +1,5 @@
 # Chilean Bee Diversity
 
-Order of analysis
-
-1.
-2.
-3.
-
-
 Session Information for Manuscript Analysis
 
 - Session info ---------------------------------------------------------------------------------------------------------
