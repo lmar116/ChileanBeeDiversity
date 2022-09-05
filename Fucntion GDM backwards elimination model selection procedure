@@ -1,0 +1,47 @@
+backward_sel_gdm <-
+  function(comm,
+           explvar,
+           alpha,
+           geoTF,
+           distance,
+           weight,
+           abund) {
+    explvarstack = explvar
+    mindif = 0
+    while (mindif < alpha && nlayers(explvarstack) > 1) {
+      distmatr_all = formatsitepair(
+        comm,
+        1,
+        abundance = abund,
+        dist = distance,
+        siteColumn = "Site",
+        XColumn = "x",
+        YColumn = "y",
+        predData = explvarstack,
+        weightType = weight
+      )
+      listdif = vector(mode = "numeric", length = nlayers(explvarstack))
+      gdm_all = gdm(distmatr_all, geo = geoTF)
+      for (i in 1:nlayers(explvarstack)) {
+        explvar_elim = dropLayer(explvarstack, i)
+        distmatr_elim = formatsitepair(
+          comm,
+          1,
+          abundance = abund,
+          dist = distance,
+          siteColumn = "Site",
+          XColumn = "x",
+          YColumn = "y",
+          predData = explvar_elim,
+          weightType = weight
+        )
+        gdm_elim = gdm(distmatr_elim, geo = geoTF)
+        dif = gdm_all$explained - gdm_elim$explained
+        listdif[i] = dif
+      }
+      mindif = min(listdif)
+      posmin = match(mindif, listdif)
+      explvarstack = dropLayer(explvarstack, posmin)
+    }
+    explvarstack
+  }
