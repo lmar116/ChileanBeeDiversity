@@ -2,7 +2,7 @@
 
 ## Chilean bee diversity: Contrasting patterns of species and phylogenetic turnover along a large-scale ecological gradient 
 
-###Leon Marshall, John S. Ascher, Cristian Villagra, Amaury Beaugendre, Valentina Herrera3, Patricia Henríquez-Piskulich, Alejandro Vera, Nicolas J. Vereecken
+### Leon Marshall, John S. Ascher, Cristian Villagra, Amaury Beaugendre, Valentina Herrera3, Patricia Henríquez-Piskulich, Alejandro Vera, Nicolas J. Vereecken
 
  **Keywords:** Generalized dissimilarity modelling, phylogenetic diversity, climate, land-use, β-diversity, solitary bees, turnover, nestedness, global biodiversity hotspot, ecoregions, endemism, biogeography
 
