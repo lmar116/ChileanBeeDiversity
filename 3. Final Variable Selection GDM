@@ -1,0 +1,37 @@
+library(GDM)
+Library(raster)
+
+#Final Variable Selection
+#GDM format 
+distmatr_selec = formatsitepair(
+  b.filt.bin.cc.good,
+  bioFormat = 1,
+  abundance = FALSE,
+  siteColumn = "Site",
+  XColumn = "x",
+  YColumn = "y",
+  predData = select.covs.cc,
+  weightType = "richness"
+)
+distmatr_selec.cc.good = na.omit(distmatr_selec.cc.good)
+
+gdm_test_signif = gdm.varImp(
+  distmatr_selec,
+  geo = T,
+  nPerm = 100,
+  parallel = TRUE,
+  cores = detectCores() - 1
+)
+
+#Extract best models and variables based 90th percentile
+gdm.best <-select.GDM.best(gdm_test_signif ,0.10)
+
+# create raster stack of selected variables . good version of df
+gdm.best.vars <-
+  lapply(gdm.best, sub, pattern = "\\_.*", replacement = "")[[1]]#as vector of names
+gdm.best.vars <- paste0(gdm.best.vars[-1],"_cc")#remove geographic
+final_expl <- stack(lapply(gdm.best.vars,get))
+final_expl_scaled <- raster.transformation(final_expl,
+                                              trans = "norm",
+                                              smin = 0,
+                                              smax = 255)
