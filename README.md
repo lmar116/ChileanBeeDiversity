@@ -14,3 +14,6 @@ Session Information for Manuscript Analysis
  ctype    Dutch_Netherlands.1252      
  tz       Europe/Berlin               
  date     2022-09-05
+
+Packages needed:
+library (rentrez)
