@@ -27,7 +27,7 @@
  tz       Europe/Berlin               
  date     2022-09-05
 
-**Packages needed:** 
+**Packages needed:**   
 library(ape)  
 library(betapart)  
 library(Biostrings)  
