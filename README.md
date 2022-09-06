@@ -7,12 +7,11 @@
  **Keywords:** Generalized dissimilarity modelling, phylogenetic diversity, climate, land-use, β-diversity, solitary bees, turnover, nestedness, global biodiversity hotspot, ecoregions, endemism, biogeography
  
 ![IMG_20220127_105650](https://user-images.githubusercontent.com/33490288/188571470-752677ee-0e22-41e0-875b-d815d9c1849d.jpg)
-
+![Github photo](https://user-images.githubusercontent.com/33490288/188577022-24bb95b7-e96b-4e85-9377-275ab1a7c441.jpg)
 ### Session Information for Manuscript Analysis
 
 ##### Session info ---------------------------------------------------------------------------------------------------------
- 
- setting  value                       
+                     
  version  R version 4.0.2 (2020-06-22)
  os       Windows Server x64          
  system   x86_64, mingw32             
@@ -23,7 +22,7 @@
  tz       Europe/Berlin               
  date     2022-09-05
 
-Packages needed:  
+**Packages needed:** 
 library(ape)  
 library(betapart)  
 library(Biostrings)  
