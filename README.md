@@ -5,6 +5,8 @@
 ##### Leon Marshall, John S. Ascher, Cristian Villagra, Amaury Beaugendre, Valentina Herrera, Patricia Henríquez-Piskulich, Alejandro Vera, Nicolas J. Vereecken
 
  **Keywords:** Generalized dissimilarity modelling, phylogenetic diversity, climate, land-use, β-diversity, solitary bees, turnover, nestedness, global biodiversity hotspot, ecoregions, endemism, biogeography
+ 
+![IMG_20220127_105650](https://user-images.githubusercontent.com/33490288/188571470-752677ee-0e22-41e0-875b-d815d9c1849d.jpg)
 
 ### Session Information for Manuscript Analysis
 
