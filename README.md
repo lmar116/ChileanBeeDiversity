@@ -15,7 +15,7 @@
 
 ### Session Information for Manuscript Analysis
 
-##### Session info ---------------------------------------------------------------------------------------------------------
+##### Session info ------------------------------------------------------------
                      
  version  R version 4.0.2 (2020-06-22)
  os       Windows Server x64          
