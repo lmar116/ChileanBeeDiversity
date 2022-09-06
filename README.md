@@ -7,7 +7,8 @@
  **Keywords:** Generalized dissimilarity modelling, phylogenetic diversity, climate, land-use, β-diversity, solitary bees, turnover, nestedness, global biodiversity hotspot, ecoregions, endemism, biogeography
  
 ![IMG_20220127_105650](https://user-images.githubusercontent.com/33490288/188571470-752677ee-0e22-41e0-875b-d815d9c1849d.jpg)
-![Github photo](https://user-images.githubusercontent.com/33490288/188577022-24bb95b7-e96b-4e85-9377-275ab1a7c441.jpg)
+##### Parque Natural Aguas de Ramón. Photo by Leon Marshall
+
 ### Session Information for Manuscript Analysis
 
 ##### Session info ---------------------------------------------------------------------------------------------------------
