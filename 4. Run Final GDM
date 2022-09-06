@@ -1,4 +1,4 @@
-#using best variablesfit final GDM
+#using best variables to fit final GDM
 
 distmatr_final = formatsitepair(
   b.filt.bin,
