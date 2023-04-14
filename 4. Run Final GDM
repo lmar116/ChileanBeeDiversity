@@ -10,7 +10,7 @@ b.filt.bin.cc <- chile_filter(
   Since = NA,
   MinYears = 3,
   MinMonths = 2,
-  BeeStart = 6,
+  BeeStart = 5,
   MinSpp = 10,
   SpatialSubset = TRUE,
   Shape = cl5km.rgdal,
