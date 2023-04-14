@@ -1,3 +1,21 @@
+#filter bee grid
+b.filt.bin.cc <- chile_filter(
+  TableGrid = bee_grid,
+  Since = NA,
+  MinYears = 3,
+  MinMonths = 2,
+  BeeStart = 8,
+  MinSpp = 10,
+  SpatialSubset = TRUE,
+  Shape = cl5km.rgdal,
+  lc_suffix = ".cc",
+  Mask = mask_chile_rs,
+  RasterStack = covs.cc,
+  WriteShape = F,
+  Filepath = "G:/Chile/Shapefiles"
+)
+
+
 #using best variables to fit final GDM
 
 distmatr_final = formatsitepair(
