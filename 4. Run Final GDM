@@ -13,12 +13,12 @@ b.filt.bin <- chile_filter(
   BeeStart = 5,
   MinSpp = 10,
   SpatialSubset = TRUE,
-  Shape = cl5km.rgdal,
+  Shape = cl.5km,
   lc_suffix = ".cc",
-  Mask = mask_chile_rs,
+  Mask = chile.mask,
   RasterStack = covs.cc,
   WriteShape = F,
-  Filepath = "G:/Chile/Shapefiles"
+  Filepath = NA
 )
 
 
