@@ -1,10 +1,16 @@
 #filter bee grid
+
+#first remove poorly sampled Genera
+poorlysampled <- c("Lasioglossum", "Halictillus", "Ruizantheda")
+bee_grid <- bee_grid[,!grepl(paste(poorlysampled, collapse="|"), names(bee_grid))]
+
+
 b.filt.bin.cc <- chile_filter(
   TableGrid = bee_grid,
   Since = NA,
   MinYears = 3,
   MinMonths = 2,
-  BeeStart = 7,
+  BeeStart = 6,
   MinSpp = 10,
   SpatialSubset = TRUE,
   Shape = cl5km.rgdal,
