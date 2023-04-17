@@ -2,13 +2,13 @@
 Data from: Chilean bee diversity: Contrasting patterns of species and phylogenetic turnover along a large-scale ecological gradient 
 
 # Authors of dataset
-Leon Marshall***1,2***, John S. Ascher***3***, Cristian Villagra***4***, Amaury Beaugendre***1***, Valentina Herrera***4***, Patricia Henríquez-Piskulich***4***, Alejandro Vera***5***, Nicolas J. Vereecken***1***
+Leon Marshall<sup>1,2<sup>, John S. Ascher<sup>3<sup>, Cristian Villagra<sup>4<sup>, Amaury Beaugendre<sup>1<sup>, Valentina Herrera<sup>4<sup>, Patricia Henríquez-Piskulich<sup>4<sup>, Alejandro Vera<sup>5<sup>, Nicolas J. Vereecken<sup>1<sup>
 
-***1***	Agroecology Lab, Université libre de Bruxelles (ULB), Boulevard du Triomphe CP 264/2, B 1050 Brussels, Belgium 
-***2***	Naturalis Biodiversity Center, Darwinweg 2, 2333 CR Leiden, The Netherlands
-***3***	Department of Biological Sciences, National University of Singapore, 14 Science Drive 4, Singapore 117543, Singapore
-***4***	Instituto de Entomología, Universidad Metropolitana de Ciencias de la Educación, Santiago, Región Metropolitana, Chile
-***5***	Departamento de Biología, Universidad Metropolitana de Ciencias de la Educación, Santiago, Región Metropolitana, Chile
+1.  Agroecology Lab, Université libre de Bruxelles (ULB), Boulevard du Triomphe CP 264/2, B 1050 Brussels, Belgium 
+2.	Naturalis Biodiversity Center, Darwinweg 2, 2333 CR Leiden, The Netherlands
+3.  Department of Biological Sciences, National University of Singapore, 14 Science Drive 4, Singapore 117543, Singapore
+4.	Instituto de Entomología, Universidad Metropolitana de Ciencias de la Educación, Santiago, Región Metropolitana, Chile
+5.	Departamento de Biología, Universidad Metropolitana de Ciencias de la Educación, Santiago, Región Metropolitana, Chile
 
 # Usage notes
 Four files are included:
