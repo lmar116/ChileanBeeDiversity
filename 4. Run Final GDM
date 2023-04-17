@@ -1,3 +1,5 @@
+#load bee grid file: "Marshall-et-al-2023_Ecosphere_DataTable_bee_grid.csv"
+
 #filter bee grid
 
 #first remove poorly sampled Genera
